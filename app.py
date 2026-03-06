@@ -100,7 +100,7 @@ def issue_book():
         cursor = conn.cursor()
 
         cursor.execute(
-            "INSERT INTO issued_books (book_id, student_name, issue_date) VALUES (?, ?, date('now'))",
+            "INSERT INTO issued_books (book_id, student_name, issue_date, status) VALUES (?, ?, date('now'), 'Issued')",
             (book_id, student)
         )
 
@@ -138,10 +138,8 @@ def issued_books():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT issued_books.id,
-               books.title,
-               issued_books.student_name,
-               issued_books.issue_date
+        SELECT issued_books.id, books.title, issued_books.student_name, issued_books.issue_date,
+             issued_books.return_date, issued_books.status
         FROM issued_books
         JOIN books ON books.id = issued_books.book_id
     """)
@@ -150,8 +148,25 @@ def issued_books():
     conn.close()
 
     return render_template("issued_book.html", books=data)
+# ---------------- RETURN BOOK ----------------
+@app.route('/return_book/<int:issued_id>')
+def return_book(issued_id):
+    if 'librarian' not in session:
+        return redirect('/login')
 
+    conn = get_db()
+    cursor = conn.cursor()
 
+    cursor.execute("""
+        UPDATE issued_books
+        SET return_date = date('now'), status = 'Returned'
+        WHERE id = ?
+    """, (issued_id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/issued_book')
 # ---------------- LOGOUT ----------------
 @app.route('/logout')
 def logout():

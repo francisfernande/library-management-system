@@ -5,6 +5,7 @@ def create_tables():
     conn = sqlite3.connect("library.db")
     cursor = conn.cursor()
 
+    # 1️⃣ Create tables first (if not exists)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS books (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,7 +18,7 @@ def create_tables():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS librarian (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT,
+        username TEXT UNIQUE,
         password TEXT
     )
     """)
@@ -30,6 +31,22 @@ def create_tables():
         issue_date TEXT
     )
     """)
+
+    # 2️⃣ Alter issued_books to add new columns (if they don't exist yet)
+    try:
+        cursor.execute("ALTER TABLE issued_books ADD COLUMN return_date TEXT")
+    except sqlite3.OperationalError:
+        pass  # column already exists
+
+    try:
+        cursor.execute("ALTER TABLE issued_books ADD COLUMN status TEXT DEFAULT 'Issued'")
+    except sqlite3.OperationalError:
+        pass  # column already exists
+
+    # 3️⃣ Check table structure
+    cursor.execute("PRAGMA table_info(issued_books)")
+    for col in cursor.fetchall():
+        print(col)
 
     conn.commit()
     conn.close()

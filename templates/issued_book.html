@@ -1,66 +1,44 @@
 <!DOCTYPE html>
-
 <html>
 <head>
     <title>Issued Books</title>
-
-<style>
-    body{
-        font-family: Arial;
-        text-align: center;
-    }
-
-    table{
-        margin: auto;
-        border-collapse: collapse;
-        width: 70%;
-    }
-
-    th, td{
-        border: 1px solid black;
-        padding: 10px;
-    }
-
-    th{
-        background-color: #f2f2f2;
-    }
-
-    a{
-        text-decoration: none;
-        font-size: 16px;
-    }
-</style>
-
 </head>
+<body style="font-family: Arial; text-align:center;">
 
-<body>
+    <h2>📚 Issued Books</h2>
 
-<h2>📚 Issued Books</h2>
+    <table border="1" align="center" cellpadding="10">
+        <tr>
+            <th>ID</th>
+            <th>Book Title</th>
+            <th>Student Name</th>
+            <th>Issue Date</th>
+            <th>Return Date</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
 
-<table>
+        {% for book in books %}
+        <tr>
+            <td>{{ book[0] }}</td>
+            <td>{{ book[1] }}</td>
+            <td>{{ book[2] }}</td>
+            <td>{{ book[3] }}</td>
+            <td>{{ book[4] if book[4] else '-' }}</td>
+            <td>{{ book[5] }}</td>
+            <td>
+                {% if book[5] == 'Issued' %}
+                <a href="/return_book/{{ book[0] }}">Return</a>
+                {% else %}
+                Returned
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
 
-<tr>
-<th>ID</th>
-<th>Book ID</th>
-<th>Student Name</th>
-<th>Issue Date</th>
-</tr>
-
-{% for book in books %}
-
-<tr>
-<td>{{ book[0] }}</td>
-<td>{{ book[1] }}</td>
-<td>{{ book[2] }}</td>
-<td>{{ book[3] }}</td>
-</tr>
-{% endfor %}
-
-</table>
-
-<br><br>
-
-<a href="/dashboard">⬅ Back to Dashboard</a>
+    <br><br>
+    <a href="/dashboard">⬅ Back to Dashboard</a>
 
 </body>
 </html>
