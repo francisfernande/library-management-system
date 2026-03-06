@@ -103,8 +103,6 @@ def issue_book():
 # ---------------- VIEW BOOKS ----------------
 @app.route('/view_books')
 def view_books():
-    if 'librarian' not in session:
-        return redirect('/login')
 
     conn = sqlite3.connect("library.db")
     cursor = conn.cursor()
