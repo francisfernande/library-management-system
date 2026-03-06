@@ -69,7 +69,7 @@ def add_book():
         conn.commit()
         conn.close()
 
-        return "<h3>Book Added Successfully!</h3><a href='/dashboard'>Back to Dashboard</a>"
+        return redirect('/dashboard')
 
     return render_template("add_book.html")
 
