@@ -1,8 +1,14 @@
 from flask import Flask, render_template, request, redirect, session
 import sqlite3
+import os
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"
+app.secret_key = os.environ.get("SECRET_KEY", "devkey")
+
+
+# ---------- DATABASE CONNECTION ----------
+def get_db():
+    return sqlite3.connect("library.db", timeout=20)
 
 
 # ---------------- HOME ----------------
@@ -14,11 +20,12 @@ def home():
 # ---------------- LOGIN ----------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
-        conn = sqlite3.connect("library.db")
+        conn = get_db()
         cursor = conn.cursor()
 
         cursor.execute(
@@ -41,6 +48,7 @@ def login():
 # ---------------- DASHBOARD ----------------
 @app.route('/dashboard')
 def dashboard():
+
     if 'librarian' not in session:
         return redirect('/login')
 
@@ -50,15 +58,17 @@ def dashboard():
 # ---------------- ADD BOOK ----------------
 @app.route('/add_book', methods=['GET', 'POST'])
 def add_book():
+
     if 'librarian' not in session:
         return redirect('/login')
 
     if request.method == 'POST':
+
         title = request.form['title']
         author = request.form['author']
         shelf = request.form['shelf']
 
-        conn = sqlite3.connect("library.db")
+        conn = get_db()
         cursor = conn.cursor()
 
         cursor.execute(
@@ -73,8 +83,9 @@ def add_book():
 
     return render_template("add_book.html")
 
+
 # ---------------- ISSUE BOOK ----------------
-@app.route('/issue_book', methods=['GET','POST'])
+@app.route('/issue_book', methods=['GET', 'POST'])
 def issue_book():
 
     if 'librarian' not in session:
@@ -85,7 +96,7 @@ def issue_book():
         book_id = request.form['book_id']
         student = request.form['student']
 
-        conn = sqlite3.connect("library.db")
+        conn = get_db()
         cursor = conn.cursor()
 
         cursor.execute(
@@ -96,15 +107,16 @@ def issue_book():
         conn.commit()
         conn.close()
 
-        return "<h3>Book Issued Successfully</h3><a href='/dashboard'>Back to Dashboard</a>"
+        return redirect('/dashboard')
 
     return render_template("issue_book.html")
 
-# ---------------- VIEW BOOKS ----------------
+
+# ---------------- VIEW BOOKS (PUBLIC) ----------------
 @app.route('/view_books')
 def view_books():
 
-    conn = sqlite3.connect("library.db")
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM books")
@@ -114,6 +126,7 @@ def view_books():
 
     return render_template("view_books.html", books=books)
 
+
 # ---------------- VIEW ISSUED BOOKS ----------------
 @app.route('/issued_book')
 def issued_books():
@@ -121,14 +134,16 @@ def issued_books():
     if 'librarian' not in session:
         return redirect('/login')
 
-    conn = sqlite3.connect("library.db")
+    conn = get_db()
     cursor = conn.cursor()
 
-
     cursor.execute("""
-    SELECT issued_books.id, books.title, issued_books.student_name, issued_books.issue_date
-    FROM issued_books
-    JOIN books ON books.id = issued_books.book_id
+        SELECT issued_books.id,
+               books.title,
+               issued_books.student_name,
+               issued_books.issue_date
+        FROM issued_books
+        JOIN books ON books.id = issued_books.book_id
     """)
 
     data = cursor.fetchall()
@@ -136,9 +151,11 @@ def issued_books():
 
     return render_template("issued_book.html", books=data)
 
+
 # ---------------- LOGOUT ----------------
 @app.route('/logout')
 def logout():
+
     session.pop('librarian', None)
     return redirect('/')
 

@@ -22,7 +22,11 @@
     </form>
 
     <br><br>
+    {% if session.get('librarian') %}
     <a href="/dashboard">⬅ Back to Dashboard</a>
+    {% else %}
+    <a href="/">⬅ Back to Home</a>
+    {% endif %}
 
 </body>
 </html>
