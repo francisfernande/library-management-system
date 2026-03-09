@@ -8,11 +8,15 @@
 
 <table border="1" align="center" cellpadding="10">
 
+<table border="1" align="center" cellpadding="10">
+
 <tr>
 <th>ID</th>
 <th>Title</th>
 <th>Author</th>
 <th>Shelf</th>
+
+{% if session.get('librarian') %}
 <th>Accession No</th>
 <th>Publisher</th>
 <th>Year</th>
@@ -20,6 +24,8 @@
 <th>Book No</th>
 <th>Cost</th>
 <th>Source</th>
+{% endif %}
+
 <th>Status</th>
 </tr>
 
@@ -30,6 +36,8 @@
 <td>{{ book[1] }}</td>
 <td>{{ book[2] }}</td>
 <td>{{ book[3] }}</td>
+
+{% if session.get('librarian') %}
 <td>{{ book[4] }}</td>
 <td>{{ book[5] }}</td>
 <td>{{ book[6] }}</td>
@@ -37,10 +45,11 @@
 <td>{{ book[8] }}</td>
 <td>{{ book[9] }}</td>
 <td>{{ book[10] }}</td>
+{% endif %}
 
 <td>
-{% if book[11] %}
-Issued to <strong>{{ book[11] }}</strong>
+{% if book[-1] %}
+Issued to <strong>{{ book[-1] }}</strong>
 {% else %}
 Available
 {% endif %}
