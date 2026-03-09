@@ -3,39 +3,57 @@
 <head>
     <title>View Books</title>
 </head>
+
 <body style="font-family: Arial; text-align:center;">
 
-    <h2>📖 All Books</h2>
+<table border="1" align="center" cellpadding="10">
 
-    <table border="1" align="center" cellpadding="10">
-        <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Shelf</th>
-            <th>Status</th>
-        </tr>
+<tr>
+<th>ID</th>
+<th>Title</th>
+<th>Author</th>
+<th>Shelf</th>
+<th>Accession No</th>
+<th>Publisher</th>
+<th>Year</th>
+<th>Pages</th>
+<th>Book No</th>
+<th>Cost</th>
+<th>Source</th>
+<th>Status</th>
+</tr>
 
-        {% for book in books %}
-        <tr>
-            <td>{{ book[0] }}</td>
-            <td>{{ book[1] }}</td>
-            <td>{{ book[2] }}</td>
-            <td>{{ book[3] }}</td>
-            <td>
-                {% if book[4] %}
-                    Issued to <strong>{{ book[4] }}</strong>
-                {% else %}
-                    Available
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+{% for book in books %}
+<tr>
 
-    <br><br>
-    <!-- One Back Link Logic -->
-    <a href="{{ '/dashboard' if session.get('librarian') else '/' }}">⬅ Back</a>
+<td>{{ book[0] }}</td>
+<td>{{ book[1] }}</td>
+<td>{{ book[2] }}</td>
+<td>{{ book[3] }}</td>
+<td>{{ book[4] }}</td>
+<td>{{ book[5] }}</td>
+<td>{{ book[6] }}</td>
+<td>{{ book[7] }}</td>
+<td>{{ book[8] }}</td>
+<td>{{ book[9] }}</td>
+<td>{{ book[10] }}</td>
+
+<td>
+{% if book[11] %}
+Issued to <strong>{{ book[11] }}</strong>
+{% else %}
+Available
+{% endif %}
+</td>
+
+</tr>
+{% endfor %}
+
+</table>
+
+<br><br>
+
+<a href="{{ '/dashboard' if session.get('librarian') else '/' }}">⬅ Back</a>
 
 </body>
 </html>

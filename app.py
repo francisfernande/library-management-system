@@ -58,23 +58,35 @@ def add_book():
 @app.route('/add_book_form', methods=['GET', 'POST'])
 def add_book_form():
     if 'librarian' not in session:
-        return redirect('/add_book')  # force login if not already
+        return redirect('/add_book')
 
     if request.method == 'POST':
         title = request.form['title']
         author = request.form['author']
         shelf = request.form['shelf']
+        accession_no = request.form['accession_no']
+        publisher = request.form['publisher']
+        year = request.form['year']
+        pages = request.form['pages']
+        book_no = request.form['book_no']
+        cost = request.form['cost']
+        source = request.form['source']
 
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO books (title, author, shelf) VALUES (?, ?, ?)",
-            (title, author, shelf)
+
+        cursor.execute("""
+        INSERT INTO books
+        (title, author, shelf, accession_no, publisher, year, pages, book_no, cost, source)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (title, author, shelf, accession_no, publisher, year, pages, book_no, cost, source)
         )
+
         conn.commit()
         conn.close()
 
-        return redirect('/')  # after adding book, go to home
+        return redirect('/dashboard')
 
     return render_template("add_book.html")
 
@@ -106,8 +118,11 @@ def issue_book():
 def view_books():
     conn = get_db()
     cursor = conn.cursor()
+
     cursor.execute("""
         SELECT b.id, b.title, b.author, b.shelf,
+               b.accession_no, b.publisher, b.year, b.pages,
+               b.book_no, b.cost, b.source,
                (SELECT student_name
                 FROM issued_books i
                 WHERE i.book_id = b.id AND i.status='Issued'
@@ -115,11 +130,12 @@ def view_books():
                ) AS current_holder
         FROM books b
     """)
+
     books = cursor.fetchall()
     conn.close()
 
     return render_template("view_books.html", books=books)
-
+    
 # ---------------- VIEW ISSUED BOOKS ----------------
 @app.route('/issued_book')
 def issued_books():
