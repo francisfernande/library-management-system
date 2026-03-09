@@ -1,25 +1,89 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>St. Anthony's Secondary Boys School Library</title>
+<title>St Anthony's Sec Boys School</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    background-color:#f2f7ff;
+    text-align:center;
+}
+
+/* Title */
+h1{
+    color:#2c3e50;
+    margin-top:50px;
+}
+
+/* Button container */
+.menu{
+    margin-top:60px;
+}
+
+/* Big buttons */
+.btn{
+    display:block;
+    width:300px;
+    margin:20px auto;
+    padding:20px;
+    font-size:22px;
+    font-weight:bold;
+    text-decoration:none;
+    border-radius:15px;
+    color:white;
+}
+
+/* Different colors */
+.view{
+    background:#3498db;
+}
+
+.stats{
+    background:#27ae60;
+}
+
+.add{
+    background:#f39c12;
+}
+
+.login{
+    background:#e74c3c;
+}
+
+/* hover effect */
+.btn:hover{
+    transform:scale(1.05);
+}
+
+</style>
+
 </head>
-<body style="font-family: Arial; margin: 0;">
 
-    <!-- Navigation Bar -->
-    <div style="background-color: darkblue; padding: 15px; color: white;">
-        <h2 style="margin:0;">📚 St. Anthony's Secondary Boys School Library</h2>
-        <div style="margin-top:10px;">
-            <a href="/" style="color:white; margin-right:20px;">Home</a>
-            <a href="/add_book">Add Book</a>
-            <a href="/view_books">View Books</a>
-        </div>
-    </div>
+<body>
 
-    <!-- Content -->
-    <div style="padding: 30px;">
-        <h3>Welcome to the Library Management System</h3>
-        <p>Manage books easily and efficiently.</p>
-    </div>
+<h1>📚 St Anthony's Sec Boys School</h1>
+
+<div class="menu">
+
+<a class="btn view" href="/view_books">
+📖 View Books
+</a>
+
+<a class="btn stats" href="/statistics">
+📊 Library Statistics
+</a>
+
+<a class="btn add" href="/add_book">
+➕ Add Book
+</a>
+
+<a class="btn login" href="/login">
+🔑 Librarian Login
+</a>
+
+</div>
 
 </body>
 </html>

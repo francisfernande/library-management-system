@@ -135,7 +135,7 @@ def view_books():
     conn.close()
 
     return render_template("view_books.html", books=books)
-    
+
 # ---------------- VIEW ISSUED BOOKS ----------------
 @app.route('/issued_book')
 def issued_books():
@@ -178,6 +178,39 @@ def return_book(issued_id):
 def logout():
     session.pop('librarian', None)
     return redirect('/')
+
+# ---------------- STATITICS ----------------
+
+@app.route('/statistics')
+def statistics():
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # total books
+    cursor.execute("SELECT COUNT(*) FROM books")
+    total_books = cursor.fetchone()[0]
+
+    # issued books
+    cursor.execute("SELECT COUNT(*) FROM issued_books WHERE status='Issued'")
+    issued_books = cursor.fetchone()[0]
+
+    # available books
+    available_books = total_books - issued_books
+
+    # total students who borrowed
+    cursor.execute("SELECT COUNT(DISTINCT student_name) FROM issued_books")
+    total_students = cursor.fetchone()[0]
+
+    conn.close()
+
+    return render_template(
+        "statistics.html",
+        total_books=total_books,
+        issued_books=issued_books,
+        available_books=available_books,
+        total_students=total_students
+    )
 
 # ---------------- RUN APP ----------------
 if __name__ == '__main__':
