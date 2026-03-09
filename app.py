@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, session
-import sqlite3
+import psycopg2
 import os
 
 app = Flask(__name__)
@@ -7,7 +7,8 @@ app.secret_key = os.environ.get("SECRET_KEY", "devkey")
 
 # ---------- DATABASE CONNECTION ----------
 def get_db():
-    return sqlite3.connect("library.db", timeout=20)
+    conn = psycopg2.connect(os.environ.get("DATABASE_URL"))
+    return conn
 
 # ---------------- HOME ----------------
 @app.route('/')
@@ -26,9 +27,8 @@ def login():
         conn = get_db()
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT * FROM librarian WHERE username=? AND password=?",
-            (username, password)
-        )
+        "SELECT * FROM librarian WHERE username=%s AND password=%s",
+        (username, password))
         user = cursor.fetchone()
         conn.close()
 
