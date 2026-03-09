@@ -5,31 +5,42 @@ import os
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "devkey")
 
+
 # ---------- DATABASE CONNECTION ----------
 def get_db():
-    conn = psycopg2.connect(os.environ.get("DATABASE_URL"))
+    conn = psycopg2.connect(os.environ["DATABASE_URL"])
+    conn.autocommit = True
     return conn
+
 
 # ---------------- HOME ----------------
 @app.route('/')
 def home():
     return render_template("index.html")
 
+
 # ---------------- LOGIN ----------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    next_page = request.args.get('next')  # page to redirect after login
+
+    next_page = request.args.get('next')
 
     if request.method == 'POST':
+
         username = request.form['username']
         password = request.form['password']
 
         conn = get_db()
         cursor = conn.cursor()
+
         cursor.execute(
-        "SELECT * FROM librarian WHERE username=%s AND password=%s",
-        (username, password))
+            "SELECT * FROM librarian WHERE username=%s AND password=%s",
+            (username, password)
+        )
+
         user = cursor.fetchone()
+
+        cursor.close()
         conn.close()
 
         if user:
@@ -40,27 +51,36 @@ def login():
 
     return render_template("login.html")
 
+
 # ---------------- DASHBOARD ----------------
 @app.route('/dashboard')
 def dashboard():
+
     if 'librarian' not in session:
         return redirect('/login')
+
     return render_template("dashboard.html")
 
+
 # ---------------- ADD BOOK ----------------
-@app.route('/add_book', methods=['GET', 'POST'])
+@app.route('/add_book')
 def add_book():
-    # Force logout if someone is already logged in and require fresh login
-    session.pop('librarian', None)
-    return redirect('/login?next=/add_book_form')
+
+    if 'librarian' not in session:
+        return redirect('/login?next=/add_book_form')
+
+    return redirect('/add_book_form')
+
 
 # ---------------- ADD BOOK FORM ----------------
 @app.route('/add_book_form', methods=['GET', 'POST'])
 def add_book_form():
+
     if 'librarian' not in session:
-        return redirect('/add_book')
+        return redirect('/login')
 
     if request.method == 'POST':
+
         title = request.form['title']
         author = request.form['author']
         shelf = request.form['shelf']
@@ -78,44 +98,51 @@ def add_book_form():
         cursor.execute("""
         INSERT INTO books
         (title, author, shelf, accession_no, publisher, year, pages, book_no, cost, source)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """,
         (title, author, shelf, accession_no, publisher, year, pages, book_no, cost, source)
         )
 
-        conn.commit()
+        cursor.close()
         conn.close()
 
         return redirect('/dashboard')
 
     return render_template("add_book.html")
 
+
 # ---------------- ISSUE BOOK ----------------
 @app.route('/issue_book', methods=['GET', 'POST'])
 def issue_book():
+
     if 'librarian' not in session:
         return redirect('/login')
 
     if request.method == 'POST':
+
         book_id = request.form['book_id']
         student = request.form['student']
 
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO issued_books (book_id, student_name, issue_date, status) VALUES (?, ?, date('now'), 'Issued')",
-            (book_id, student)
-        )
-        conn.commit()
+
+        cursor.execute("""
+            INSERT INTO issued_books (book_id, student_name, issue_date, status)
+            VALUES (%s, %s, CURRENT_DATE, 'Issued')
+        """, (book_id, student))
+
+        cursor.close()
         conn.close()
 
         return redirect('/dashboard')
 
     return render_template("issue_book.html")
 
+
 # ---------------- VIEW BOOKS (PUBLIC) ----------------
 @app.route('/view_books')
 def view_books():
+
     conn = get_db()
     cursor = conn.cursor()
 
@@ -132,86 +159,104 @@ def view_books():
     """)
 
     books = cursor.fetchall()
+
+    cursor.close()
     conn.close()
 
     return render_template("view_books.html", books=books)
 
+
 # ---------------- VIEW ISSUED BOOKS ----------------
 @app.route('/issued_book')
-def issued_books():
+def issued_books_page():
+
     if 'librarian' not in session:
         return redirect('/login')
 
     conn = get_db()
     cursor = conn.cursor()
+
     cursor.execute("""
-        SELECT issued_books.id, books.title, issued_books.student_name, issued_books.issue_date,
-               issued_books.return_date, issued_books.status
+        SELECT issued_books.id,
+               books.title,
+               issued_books.student_name,
+               issued_books.issue_date,
+               issued_books.return_date,
+               issued_books.status
         FROM issued_books
         JOIN books ON books.id = issued_books.book_id
     """)
+
     data = cursor.fetchall()
+
+    cursor.close()
     conn.close()
 
     return render_template("issued_book.html", books=data)
 
+
 # ---------------- RETURN BOOK ----------------
 @app.route('/return_book/<int:issued_id>')
 def return_book(issued_id):
+
     if 'librarian' not in session:
         return redirect('/login')
 
     conn = get_db()
     cursor = conn.cursor()
+
     cursor.execute("""
         UPDATE issued_books
-        SET return_date = date('now'), status = 'Returned'
-        WHERE id = ?
+        SET return_date = CURRENT_DATE,
+            status = 'Returned'
+        WHERE id = %s
     """, (issued_id,))
-    conn.commit()
+
+    cursor.close()
     conn.close()
 
     return redirect('/issued_book')
 
+
 # ---------------- LOGOUT ----------------
 @app.route('/logout')
 def logout():
+
     session.pop('librarian', None)
     return redirect('/')
 
-# ---------------- STATITICS ----------------
 
+# ---------------- STATISTICS ----------------
 @app.route('/statistics')
 def statistics():
 
     conn = get_db()
     cursor = conn.cursor()
 
-    # total books
     cursor.execute("SELECT COUNT(*) FROM books")
     total_books = cursor.fetchone()[0]
 
-    # issued books
     cursor.execute("SELECT COUNT(*) FROM issued_books WHERE status='Issued'")
-    issued_books = cursor.fetchone()[0]
+    issued_count = cursor.fetchone()[0]
 
-    # available books
-    available_books = total_books - issued_books
+    available_books = total_books - issued_count
 
-    # total students who borrowed
     cursor.execute("SELECT COUNT(DISTINCT student_name) FROM issued_books")
     total_students = cursor.fetchone()[0]
 
+    cursor.close()
     conn.close()
 
     return render_template(
         "statistics.html",
         total_books=total_books,
-        issued_books=issued_books,
+        issued_books=issued_count,
         available_books=available_books,
         total_students=total_students
     )
 
+
 # ---------------- RUN APP ----------------
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=10000, debug=False)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
