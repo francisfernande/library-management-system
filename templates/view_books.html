@@ -1,14 +1,97 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>View Books</title>
+<title>View Books</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    background:#f2f7ff;
+    text-align:center;
+}
+
+h2{
+    margin-top:40px;
+    color:#2c3e50;
+    font-size:32px;
+}
+
+/* PUBLIC VIEW (BIG TABLE) */
+{% if not session.get('librarian') %}
+
+table{
+    width:90%;
+    font-size:20px;
+}
+
+th, td{
+    padding:18px;
+    min-width:150px;
+}
+
+{% else %}
+
+/* LIBRARIAN VIEW (COMPACT TABLE) */
+
+table{
+    width:95%;
+    font-size:15px;
+}
+
+th, td{
+    padding:8px;
+}
+
+{% endif %}
+
+table{
+    border-collapse:collapse;
+    margin:auto;
+    margin-top:30px;
+    background:white;
+    box-shadow:0px 4px 10px rgba(0,0,0,0.1);
+}
+
+th{
+    background:#3498db;
+    color:white;
+}
+
+tr:nth-child(even){
+    background:#f9f9f9;
+}
+
+.available{
+    color:green;
+    font-weight:bold;
+}
+
+.issued{
+    color:red;
+    font-weight:bold;
+}
+
+.back{
+    display:inline-block;
+    margin-top:30px;
+    padding:12px 25px;
+    background:#2ecc71;
+    color:white;
+    text-decoration:none;
+    border-radius:8px;
+}
+
+
+</style>
+
 </head>
 
-<body style="font-family: Arial; text-align:center;">
+<body>
 
-<table border="1" align="center" cellpadding="10">
+<h2>📖 Library Books</h2>
 
-<table border="1" align="center" cellpadding="10">
+<table border="1">
 
 <tr>
 <th>ID</th>
@@ -17,7 +100,7 @@
 <th>Shelf</th>
 
 {% if session.get('librarian') %}
-<th>Accession No</th>
+<th>Accession</th>
 <th>Publisher</th>
 <th>Year</th>
 <th>Pages</th>
@@ -49,9 +132,9 @@
 
 <td>
 {% if book[-1] %}
-Issued to <strong>{{ book[-1] }}</strong>
+<span class="issued">Issued to {{ book[-1] }}</span>
 {% else %}
-Available
+<span class="available">Available</span>
 {% endif %}
 </td>
 
@@ -60,9 +143,11 @@ Available
 
 </table>
 
-<br><br>
+<br>
 
-<a href="{{ '/dashboard' if session.get('librarian') else '/' }}">⬅ Back</a>
+<a class="back" href="{{ '/dashboard' if session.get('librarian') else '/' }}">
+⬅ Back
+</a>
 
 </body>
 </html>
